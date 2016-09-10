@@ -17,8 +17,11 @@ module.exports = {
 			var currentTargetFloor 	= null;
 			var mTargetFloors 		= [];
 
-			var upPeople			= [];
-			var downPeople			= [];
+			var upFloor			= [];
+			var downFloor			= [];
+
+			var peopleToLeave = {};
+			var peopleToEnter = {};
 
 			var mTimeToCloseDoor = 20;
 			var doorTimer = 20;
@@ -30,6 +33,58 @@ module.exports = {
 				getId: function() {
 					return mId;
 				},
+				addIntoFullyLoaded: function(callObj,person) {
+					peopleToEnter[ callObj.from ].push(person);
+					peopleToLeave[ callObj.to ].push(person);
+				},
+				add: function(callObj,person) {
+					peopleToEnter[ callObj.from ].push(person);
+					peopleToLeave[ callObj.to ].push(person);
+
+					if ( mCurrentFloor === callObj.from )
+					{
+						if ( callObj.from < callObj.to )
+						{
+							upFloor.push( callObj.to );
+							upFloor.sort();							
+						}
+						else
+						{
+							downFloor.push( callObj.to );
+							downFloor.sort();														
+						}
+					}
+					else if ( mCurrentFloor > callObj.from )
+					{
+						downFloor.push( callObj.from );
+						if ( callObj.from < callObj.to )
+							upFloor.push( callObj.to );
+						else
+						{
+						}
+					}
+					else if ( mCurrentFloor < callObj.from )
+					{
+						if ( callObj.from < callObj.to )
+						{
+						}
+						else
+						{
+						}
+					}
+				},
+				leavePeople: function() {
+					var currentFloor = this.getCurrentFloor();
+					for (var i=0;i<peopleToLeave[currentFloor].length;i++)
+						peopleToLeave[currentFloor][i].leaveLift();
+					delete peopleToLeave[ this.getCurrentFloor() ];
+				},
+				catchPeople: function() {
+					var currentFloor = this.getCurrentFloor();
+					for (var i=0;i<peopleToEnter[currentFloor].length;i++)
+						peopleToEnter[currentFloor][i].enterLift();
+					delete peopleToEnter[ this.getCurrentFloor() ];
+				},
 				getState: function() {
 					return mState;
 				},
@@ -37,10 +92,10 @@ module.exports = {
 					mMaxPassangers = maxPassangers;
 				},
 				isFullyLoaded: function() {
-					return ((upPeople.length+downPeople.length)>=mMaxPassangers);
+					return ((upFloor.length+downFloor.length)>=mMaxPassangers);
 				},
 				getNumOfPeopleIn: function() {
-					return upPeople.length+downPeople.length;
+					return upFloor.length+downFloor.length;
 				},
 				isStopped: function() {
 					if (mState === STOPPED)
@@ -54,18 +109,18 @@ module.exports = {
 				},
 				moveUpTo: function(floor) {
 					this.setCurrentFloor(floor);
-					if ( upPeople.length > 0 )
+					if ( upFloor.length > 0 )
 					{
-						var floorIdx = upPeople.indexOf(Math.ceil(floor));
-						upPeople.splice(0,floorIdx+1)
+						var floorIdx = upFloor.indexOf(Math.ceil(floor));
+						upFloor.splice(0,floorIdx+1)
 					}
 				},
 				moveDownTo: function(floor) {
 					this.setCurrentFloor(floor);
-					if ( downPeople.length > 0 )
+					if ( downFloor.length > 0 )
 					{
-						var floorIdx = downPeople.indexOf(Math.ceil(floor));
-						downPeople.splice(0,floorIdx+1)
+						var floorIdx = downFloor.indexOf(Math.ceil(floor));
+						downFloor.splice(0,floorIdx+1)
 					}
 				},
 				setCurrentFloor: function(currentFloor) {
@@ -77,19 +132,19 @@ module.exports = {
 				getTargetFloor: function() {
 					if (mState === MOVING_UP || mState === WAITING_DOOR_CLOSE_TO_GO_UP)
 					{
-						if ( upPeople.length > 0 )
-							return upPeople[ 0 ];
-						else if ( downPeople.length > 0 )
-							return downPeople[0]
+						if ( upFloor.length > 0 )
+							return upFloor[ 0 ];
+						else if ( downFloor.length > 0 )
+							return downFloor[0]
 						else
 							return null;
 					}
 					else if (mState === MOVING_DOWN || mState === WAITING_DOOR_CLOSE_TO_GO_DOWN)
 					{
-						if ( downPeople.length > 0 )
-							return downPeople[ 0 ];
-						else if ( upPeople.length > 0 )
-							return upPeople[0]
+						if ( downFloor.length > 0 )
+							return downFloor[ 0 ];
+						else if ( upFloor.length > 0 )
+							return upFloor[0]
 						else
 							return null;
 					}
@@ -104,17 +159,17 @@ module.exports = {
 				setState: function(state) {
 					mState = state;
 				},
-				setUpPeople: function(upPeopleParam) {
-					upPeople = upPeopleParam;
+				setUpFloors: function(upFloorParam) {
+					upFloor = upFloorParam;
 				},
-				setDownPeople: function(downPeopleParam) {
-					downPeople = downPeopleParam;
+				setDownFloors: function(downFloorParam) {
+					downFloor = downFloorParam;
 				},
-				getDownPeople: function() {
-					return downPeople;
+				getDownFloor: function() {
+					return downFloor;
 				},
-				getUpPeople: function() {
-					return upPeople;
+				getUpFloor: function() {
+					return upFloor;
 				},
 				setTimeToCloseDoor: function(timeToCloseDoor) {
 					mTimeToCloseDoor = timeToCloseDoor;
@@ -141,11 +196,11 @@ module.exports = {
 		if ( typeof config !== 'undefined' && typeof config.timeToCloseDoor !== 'undefined' )
 			lift.setTimeToCloseDoor(config.timeToCloseDoor);
 
-		if ( typeof config !== 'undefined' && typeof config.upPeople !== 'undefined' )
-			lift.setUpPeople(config.upPeople);
+		if ( typeof config !== 'undefined' && typeof config.upFloor !== 'undefined' )
+			lift.setUpFloors(config.upFloor);
 
-		if ( typeof config !== 'undefined' && typeof config.downPeople !== 'undefined' )
-			lift.setDownPeople(config.downPeople);		
+		if ( typeof config !== 'undefined' && typeof config.downFloor !== 'undefined' )
+			lift.setDownFloors(config.downFloor);		
 
 		if ( typeof config !== 'undefined' && typeof config.maxPassangers !== 'undefined' )
 			lift.setMaxPassangers(config.maxPassangers);
@@ -161,5 +216,7 @@ module.exports = {
 
 		return lift;
 	}
-
 }
+
+[4,6,8,10]
+[9,7,6,1]

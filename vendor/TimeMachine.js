@@ -22,11 +22,16 @@ module.exports = {
 
 					switch(lift.getState()) {
 						case STOPPED:
+							lift.leavePeople();
+							lift.catchPeople();
 							lift.setState(STOPPED);
 							return lift;
 						break;
 						
 						case WAITING_DOOR_CLOSE_TO_GO_UP:
+							lift.leavePeople();
+							lift.catchPeople();
+
 							if ( !lift.hasTargetFloor() || ( lift.getTargetFloor() === lift.getCurrentFloor() && lift.getNumOfPeopleIn() === 1 ))
 							{
 								lift.setState(STOPPED);
@@ -54,6 +59,8 @@ module.exports = {
 						break;
 
 						case WAITING_DOOR_CLOSE_TO_GO_DOWN:
+							lift.leavePeople();
+							lift.catchPeople();
 							if ( !lift.hasTargetFloor() || ( lift.getTargetFloor() === lift.getCurrentFloor() && lift.getNumOfPeopleIn() === 1) )
 							{
 								lift.setState(STOPPED);

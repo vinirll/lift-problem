@@ -121,6 +121,8 @@ module.exports = {
 						}
 					}
 
+					//shuffle between best scores
+
 					return ( bestLift !== null )? bestLift: mLifts[ scoreHash[descOrderedScores[0]][0] ];
 				},
 				getBestLiftScoreHash: function(callObj) {

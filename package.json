@@ -1,0 +1,26 @@
+{
+  "name": "lift-problem",
+  "version": "0.0.1",
+  "description": "Lift Problem Algorithm",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://vinirll@bitbucket.org/vinirll/lift-problem.git"
+  },
+  "author": "Vinicius Lima",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/vinirll/lift-problem#readme",
+  "devDependencies": {
+    "csv": "^1.1.0",
+    "csv-parse": "^1.1.7",
+    "mocha": "^3.0.2"
+  },
+  "dependencies": {
+    "lodash": "^4.15.0",
+    "moment": "^2.14.1",
+    "shuffle-array": "^1.0.0"
+  }
+}

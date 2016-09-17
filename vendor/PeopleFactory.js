@@ -30,7 +30,7 @@ module.exports = {
 
 	createPerson: function(config) {
 
-		return (function(name,arrivalTime,targetFloor){
+		return (function(name,arrivalTime,targetFloor,inLiftParam){
 
 			var mArrivalTime = moment(arrivalTime,"YYYY-MM-DD HH:mm:ss").unix();
 			var leftLiftTime = null;
@@ -42,7 +42,7 @@ module.exports = {
 			var currentFloor = 1;
 
 
-			var inLift = false;
+			var inLift = (typeof inLiftParam !== 'undefined')?inLiftParam:false;
 
 			return {
 				getArrivalTime: function() {
@@ -83,6 +83,6 @@ module.exports = {
 				}
 			};
 
-		})(config.name,config.arrivalTime,config.targetFloor);
+		})(config.name,config.arrivalTime,config.targetFloor,config.inLift);
 	}
 }

@@ -1,4 +1,3 @@
-// https://books.google.com.br/books?id=OOBzCgAAQBAJ&pg=PA245&lpg=PA245&dq=lift+figure+of+suitability&source=bl&ots=h9S5OYUkP2&sig=urRSbMQ-OvCHBr1iw5Fk0LHOAMc&hl=pt-BR&sa=X&ved=0ahUKEwjRlfrMy_nOAhVGhpAKHei2AKwQ6AEIHjAA#v=onepage&q=loaded&f=false
 var UP = 2;
 var DOWN = 3;
 var TOWARDS = 4;
@@ -90,13 +89,9 @@ module.exports = {
 					mTimeMachine = timeMachine;
 				},
 
-				callLift: function(callObj) {
-					var liftToAnswer = this.getBestLiftToAnswer(callObj);
-
-					if (liftToAnswer.isFullyLoaded())
-						liftToAnswer.addIntoFullyLoaded(callObj);
-					else
-						liftToAnswer.add(callObj);
+				callBestLift: function(intent) {
+					var liftToAnswer = this.getBestLiftToAnswer(intent);
+					liftToAnswer.call( intent );
 				},
 
 				getLiftScore: function(lift,callObj) {

@@ -1,6 +1,7 @@
 var assert 					= require('assert');
 var liftFactory				= require('../vendor/Lift.js');
 var brain 					= require('../vendor/Console.js');
+var peopleFactory 			= require('../vendor/PeopleFactory.js');
 var timeMachineFactory 		= require('../vendor/TimeMachine.js');
 
 var STOPPED = 1;
@@ -9,47 +10,47 @@ var MOVING_DOWN = 3;
 var WAITING_DOOR_CLOSE_TO_GO_UP = 4;
 var WAITING_DOOR_CLOSE_TO_GO_DOWN = 5;
 
-describe('Lift Creation', function() {
-	var lift1 = liftFactory.createLift({id:1,maxPassangers:8,upFloor:[1,4,6],downFloor:[3,10]});
+// describe('Lift Creation', function() {
+// 	var lift1 = liftFactory.createLift({id:1,maxPassangers:8,upFloor:[1,4,6],downFloor:[3,10]});
 
-	it('should be initially at first floor',function(){
-		assert.equal(1,lift1.getCurrentFloor());
-	});
+// 	it('should be initially at first floor',function(){
+// 		assert.equal(1,lift1.getCurrentFloor());
+// 	});
 
-	it('should be initially stopped',function(){
-		assert.equal(true,lift1.isStopped());
-	});
+// 	it('should be initially stopped',function(){
+// 		assert.equal(true,lift1.isStopped());
+// 	});
 
-	it('should be moving up afte set up',function(){
-		lift1.setState(MOVING_UP);
-		assert.equal(true,lift1.getState()===MOVING_UP);
-	});
+// 	it('should be moving up afte set up',function(){
+// 		lift1.setState(MOVING_UP);
+// 		assert.equal(true,lift1.getState()===MOVING_UP);
+// 	});
 
-	it('should be moving down afte set down',function(){
-		lift1.setState(MOVING_DOWN);
-		assert.equal(true,lift1.getState()===MOVING_DOWN);
-	});
+// 	it('should be moving down afte set down',function(){
+// 		lift1.setState(MOVING_DOWN);
+// 		assert.equal(true,lift1.getState()===MOVING_DOWN);
+// 	});
 
-	it('should have the right number of upFloor added in',function(){
-		assert.equal(3,lift1.getUpFloor().length);
-		assert.equal(2,lift1.getDownFloor().length);
-	});
+// 	it('should have the right number of upFloor added in',function(){
+// 		assert.equal(3,lift1.getUpFloor().length);
+// 		assert.equal(2,lift1.getDownFloor().length);
+// 	});
 
-	it('should moveUpTo Correctly',function(){
-		var lift2 = liftFactory.createLift({id:2,maxPassangers:8,upFloor:[1,4,6,10,11],downFloor:[11,10,8,5,3,1]});
-		lift2.moveUpTo( 6 );
-		assert.equal(6,lift2.getCurrentFloor());
-		assert.deepEqual([10,11],lift2.getUpFloor());
-	});
+// 	it('should moveUpTo Correctly',function(){
+// 		var lift2 = liftFactory.createLift({id:2,maxPassangers:8,upFloor:[1,4,6,10,11],downFloor:[11,10,8,5,3,1]});
+// 		lift2.moveUpTo( 6 );
+// 		assert.equal(6,lift2.getCurrentFloor());
+// 		assert.deepEqual([10,11],lift2.getUpFloor());
+// 	});
 
-	it('should moveDownTo Correctly',function(){
-		var lift2 = liftFactory.createLift({id:2,maxPassangers:8,upFloor:[1,4,6,10,11],downFloor:[11,10,8,5,3,1]});
-		lift2.setCurrentFloor(11);
-		lift2.moveDownTo( 8 );
-		assert.equal(8,lift2.getCurrentFloor());
-		assert.deepEqual([5,3,1],lift2.getDownFloor());
-	});
-});
+// 	it('should moveDownTo Correctly',function(){
+// 		var lift2 = liftFactory.createLift({id:2,maxPassangers:8,upFloor:[1,4,6,10,11],downFloor:[11,10,8,5,3,1]});
+// 		lift2.setCurrentFloor(11);
+// 		lift2.moveDownTo( 8 );
+// 		assert.equal(8,lift2.getCurrentFloor());
+// 		assert.deepEqual([5,3,1],lift2.getDownFloor());
+// 	});
+// });
 
 describe('Lift people control', function() {
 	var max = 8;
@@ -373,213 +374,202 @@ describe('Score Assignment',function(){
 });
 
 describe('TimeMachine',function(){
-	it('MOVING UP - CASE 1',function(){
+	// it('MOVING UP - CASE 1',function(){
+	// 	var lift1 			= liftFactory.createLift({id:1,maxPassangers:8,currentFloor:1});
+	// 	var liftConsole 	= brain.createLiftBrain();
+	// 	lift1.call({from:1,to:2,person: peopleFactory.createPerson({name:'A',arrivalTime:123123123123,targetFloor:2,inLift:false})});
+	// 	lift1.call({from:1,to:4,person: peopleFactory.createPerson({name:'A',arrivalTime:123123123123,targetFloor:2,inLift:false})});
+
+	// 	lift1.setState(WAITING_DOOR_CLOSE_TO_GO_UP);
+	// 	liftConsole.addLift(lift1);
+
+	// 	var timeMachine = timeMachineFactory.createTimeMachine();
+	// 	liftConsole.plugTimeMachine(timeMachine);
+		
+	// 	var lift1 = liftConsole.applyTimeMachineTo(0,10); //10 seconds
+	// 	assert.equal(1,lift1.getCurrentFloor());
+	// 	assert.equal(WAITING_DOOR_CLOSE_TO_GO_UP,lift1.getState());
+	// });
+
+	it('MOVING UP - CASE 2',function(){
 		var lift1 			= liftFactory.createLift({id:1,maxPassangers:8,currentFloor:1});
 		var liftConsole 	= brain.createLiftBrain();
-		lift1.setUpFloors([2,4]);
+		lift1.call({from:1,to:2,person: peopleFactory.createPerson({name:'A',arrivalTime:123123123123,targetFloor:2,inLift:false})});
+		lift1.call({from:1,to:4,person: peopleFactory.createPerson({name:'B',arrivalTime:123123123123,targetFloor:2,inLift:false})});
 		lift1.setState(WAITING_DOOR_CLOSE_TO_GO_UP);
 		liftConsole.addLift(lift1);
-
+		
 		var timeMachine = timeMachineFactory.createTimeMachine();
 		liftConsole.plugTimeMachine(timeMachine);
-		
-		var lift1 = liftConsole.applyTimeMachineTo(0,10); //10 minutes
-		assert.equal(1,lift1.getCurrentFloor());
+
+		var lift1 = liftConsole.applyTimeMachineTo(0,20);
 		assert.equal(WAITING_DOOR_CLOSE_TO_GO_UP,lift1.getState());
+		assert.equal(1,lift1.getCurrentFloor());
 	});
 
 	it('MOVING UP - CASE 2',function(){
 		var lift1 			= liftFactory.createLift({id:1,maxPassangers:8,currentFloor:1});
 		var liftConsole 	= brain.createLiftBrain();
-		lift1.setUpFloors([2,4]);
+		lift1.call({from:1,to:2,person: peopleFactory.createPerson({name:'A',arrivalTime:123123123123,targetFloor:2,inLift:false})});
+		lift1.call({from:1,to:4,person: peopleFactory.createPerson({name:'B',arrivalTime:123123123123,targetFloor:2,inLift:false})});
 		lift1.setState(WAITING_DOOR_CLOSE_TO_GO_UP);
 		liftConsole.addLift(lift1);
 		
 		var timeMachine = timeMachineFactory.createTimeMachine();
 		liftConsole.plugTimeMachine(timeMachine);
 
-		var lift1 = liftConsole.applyTimeMachineTo(0,25);
+		var lift1 = liftConsole.applyTimeMachineTo(0,20);
+		assert.equal(WAITING_DOOR_CLOSE_TO_GO_UP,lift1.getState());
+		assert.equal(1,lift1.getCurrentFloor());
+
+		var lift1 = liftConsole.applyTimeMachineTo(0,2);
 		assert.equal(WAITING_DOOR_CLOSE_TO_GO_UP,lift1.getState());
 		assert.equal(2,lift1.getCurrentFloor());
+
+		var lift1 = liftConsole.applyTimeMachineTo(0,20);
+		assert.equal(WAITING_DOOR_CLOSE_TO_GO_UP,lift1.getState());
+		assert.equal(2,lift1.getCurrentFloor());
+
+		var lift1 = liftConsole.applyTimeMachineTo(0,2);
+		assert.equal(MOVING_UP,lift1.getState());
+		assert.equal(3,lift1.getCurrentFloor());
+
+		var lift1 = liftConsole.applyTimeMachineTo(0,2);
+		assert.equal(STOPPED,lift1.getState());
+		assert.equal(4,lift1.getCurrentFloor());
+
+		var lift1 = liftConsole.applyTimeMachineTo(0,20000);
+		assert.equal(STOPPED,lift1.getState());
+		assert.equal(4,lift1.getCurrentFloor());
 	});
 
 	it('MOVING UP - CASE 3',function(){
 		var lift1 			= liftFactory.createLift({id:1,maxPassangers:8,currentFloor:1});
 		var liftConsole 	= brain.createLiftBrain();
-		lift1.setUpFloors([2,4]);
+		lift1.call({from:1,to:2,person: peopleFactory.createPerson({name:'A',arrivalTime:123123123123,targetFloor:2,inLift:false})});
+		lift1.call({from:1,to:4,person: peopleFactory.createPerson({name:'B',arrivalTime:123123123123,targetFloor:2,inLift:false})});
+		lift1.call({from:2,to:4,person: peopleFactory.createPerson({name:'C',arrivalTime:123123123123,targetFloor:2,inLift:false})});
 		lift1.setState(WAITING_DOOR_CLOSE_TO_GO_UP);
 		liftConsole.addLift(lift1);
-
+		
 		var timeMachine = timeMachineFactory.createTimeMachine();
 		liftConsole.plugTimeMachine(timeMachine);
 
-		var lift1 = liftConsole.applyTimeMachineTo(0,44);
-		assert.equal(MOVING_UP,lift1.getState());
-		assert.equal(3,lift1.getCurrentFloor());
-	});	
+		assert.equal(0,lift1.getNumOfPeopleIn());
 
-	it('MOVING UP - CASE 4',function(){
-		var lift1 			= liftFactory.createLift({id:1,maxPassangers:8,currentFloor:1});
-		var liftConsole 	= brain.createLiftBrain();
-		lift1.setUpFloors([2,4]);
-		lift1.setState(WAITING_DOOR_CLOSE_TO_GO_UP);
-		liftConsole.addLift(lift1);
+		var lift1 = liftConsole.applyTimeMachineTo(0,20);
+		assert.equal(WAITING_DOOR_CLOSE_TO_GO_UP,lift1.getState());
+		assert.equal(2,lift1.getNumOfPeopleIn());
+		assert.equal(1,lift1.getCurrentFloor());
 
-		var timeMachine = timeMachineFactory.createTimeMachine();
-		liftConsole.plugTimeMachine(timeMachine);
+		var lift1 = liftConsole.applyTimeMachineTo(0,2);
+		assert.equal(WAITING_DOOR_CLOSE_TO_GO_UP,lift1.getState());
+		assert.equal(2,lift1.getNumOfPeopleIn());
+		assert.equal(2,lift1.getCurrentFloor());
 
 		var lift1 = liftConsole.applyTimeMachineTo(0,22);
-		assert.equal(WAITING_DOOR_CLOSE_TO_GO_UP,lift1.getState());
-		assert.equal(2,lift1.getCurrentFloor());
+		assert.equal(MOVING_UP,lift1.getState());
+		assert.equal(2,lift1.getNumOfPeopleIn());
+		assert.equal(3,lift1.getCurrentFloor());
 
-		var lift1 = liftConsole.applyTimeMachineTo(0,20);
-		assert.equal(WAITING_DOOR_CLOSE_TO_GO_UP,lift1.getState());
-		assert.equal(2,lift1.getCurrentFloor());
-
-		var lift1 = liftConsole.applyTimeMachineTo(0,4);
+		var lift1 = liftConsole.applyTimeMachineTo(0,2);
 		assert.equal(STOPPED,lift1.getState());
+		assert.equal(0,lift1.getNumOfPeopleIn());
 		assert.equal(4,lift1.getCurrentFloor());
-	});	
-
-	it('MOVING DOWN - CASE 1',function(){
-		var lift1 			= liftFactory.createLift({id:1,maxPassangers:8,currentFloor:1});
-		var liftConsole 	= brain.createLiftBrain();
-		lift1.setCurrentFloor(4);
-		lift1.setDownFloors([1]);
-		lift1.setState(WAITING_DOOR_CLOSE_TO_GO_DOWN);
-		liftConsole.addLift(lift1);
-
-		var timeMachine = timeMachineFactory.createTimeMachine();
-		liftConsole.plugTimeMachine(timeMachine);
-
-		var lift1 = liftConsole.applyTimeMachineTo(0,26);
-		assert.equal(STOPPED,lift1.getState());
-		assert.equal(1,lift1.getCurrentFloor());
 	});
 
-	it('MOVING DOWN - CASE 2',function(){
+it('MOVING DOWN - CASE 1',function(){
 		var lift1 			= liftFactory.createLift({id:1,maxPassangers:8,currentFloor:1});
 		var liftConsole 	= brain.createLiftBrain();
-		lift1.setCurrentFloor(4);
-		lift1.setDownFloors([1]);
-		lift1.setState(WAITING_DOOR_CLOSE_TO_GO_DOWN);
+		lift1.call({from:1,to:2,person: peopleFactory.createPerson({name:'A',arrivalTime:123123123123,targetFloor:2,inLift:false})});
+		lift1.call({from:1,to:4,person: peopleFactory.createPerson({name:'B',arrivalTime:123123123123,targetFloor:2,inLift:false})});
+		lift1.call({from:2,to:4,person: peopleFactory.createPerson({name:'C',arrivalTime:123123123123,targetFloor:2,inLift:false})});
+		lift1.call({from:5,to:1,person: peopleFactory.createPerson({name:'C',arrivalTime:123123123123,targetFloor:2,inLift:false})});
+		lift1.setState(WAITING_DOOR_CLOSE_TO_GO_UP);
 		liftConsole.addLift(lift1);
-
+		
 		var timeMachine = timeMachineFactory.createTimeMachine();
 		liftConsole.plugTimeMachine(timeMachine);
 
-		var lift1 = liftConsole.applyTimeMachineTo(0,26);
-		assert.equal(STOPPED,lift1.getState());
-		assert.equal(1,lift1.getCurrentFloor());
-	});
+		var lift1 = liftConsole.applyTimeMachineTo(0,46);
+		assert.equal(WAITING_DOOR_CLOSE_TO_GO_UP,lift1.getState());
+		assert.equal(0,lift1.getNumOfPeopleIn());
+		assert.equal(4,lift1.getCurrentFloor());
 
-	it('MOVING DOWN - CASE 3',function(){
-		var lift1 			= liftFactory.createLift({id:1,maxPassangers:8,currentFloor:1});
-		var liftConsole 	= brain.createLiftBrain();
-		lift1.setCurrentFloor(10);
-		lift1.setDownFloors([6,1]);
-		lift1.setState(WAITING_DOOR_CLOSE_TO_GO_DOWN);
-		liftConsole.addLift(lift1);
-
-		var timeMachine = timeMachineFactory.createTimeMachine();
-		liftConsole.plugTimeMachine(timeMachine);
-
-		var lift1 = liftConsole.applyTimeMachineTo(0,28);
+		var lift1 = liftConsole.applyTimeMachineTo(0,22);
 		assert.equal(WAITING_DOOR_CLOSE_TO_GO_DOWN,lift1.getState());
-		assert.equal(6,lift1.getCurrentFloor());
+		assert.equal(1,lift1.getNumOfPeopleIn());
+		assert.equal(5,lift1.getCurrentFloor());
 
-		var lift1 = liftConsole.applyTimeMachineTo(0,20);
-		assert.equal(WAITING_DOOR_CLOSE_TO_GO_DOWN,lift1.getState());
-		assert.equal(6,lift1.getCurrentFloor());
+		var lift1 = liftConsole.applyTimeMachineTo(0,22);
+		assert.equal(MOVING_DOWN,lift1.getState());
+		assert.equal(1,lift1.getNumOfPeopleIn());
+		assert.equal(4,lift1.getCurrentFloor());
 
 		var lift1 = liftConsole.applyTimeMachineTo(0,2);
 		assert.equal(MOVING_DOWN,lift1.getState());
-		assert.equal(5,lift1.getCurrentFloor());
+		assert.equal(1,lift1.getNumOfPeopleIn());
+		assert.equal(3,lift1.getCurrentFloor());
 
-		var lift1 = liftConsole.applyTimeMachineTo(0,8);
+		var lift1 = liftConsole.applyTimeMachineTo(0,2);
+		assert.equal(MOVING_DOWN,lift1.getState());
+		assert.equal(1,lift1.getNumOfPeopleIn());
+		assert.equal(2,lift1.getCurrentFloor());
+
+		var lift1 = liftConsole.applyTimeMachineTo(0,2);
 		assert.equal(STOPPED,lift1.getState());
+		assert.equal(0,lift1.getNumOfPeopleIn());
+		assert.equal(1,lift1.getCurrentFloor());		
+
+		var lift1 = liftConsole.applyTimeMachineTo(0,20000);
+		assert.equal(STOPPED,lift1.getState());
+		assert.equal(0,lift1.getNumOfPeopleIn());
 		assert.equal(1,lift1.getCurrentFloor());
 	});
 
 	it('MOVING UP AND DOWN - CASE 1',function(){
 		var lift1 			= liftFactory.createLift({id:1,maxPassangers:8,currentFloor:1});
 		var liftConsole 	= brain.createLiftBrain();
-		lift1.setUpFloors([2,4,10]);
-		lift1.setDownFloors([4,2,1]);
+
+
+		lift1.call({from:1,to:15,person: peopleFactory.createPerson({name:'A',arrivalTime:123123123123,targetFloor:2,inLift:false})});
+		lift1.call({from:5,to:1,person: peopleFactory.createPerson({name:'B',arrivalTime:123123123123,targetFloor:2,inLift:false})});
+		lift1.call({from:10,to:5,person: peopleFactory.createPerson({name:'C',arrivalTime:123123123123,targetFloor:2,inLift:false})});
+
 		lift1.setState(WAITING_DOOR_CLOSE_TO_GO_UP);
 		liftConsole.addLift(lift1);
-
 		var timeMachine = timeMachineFactory.createTimeMachine();
 		liftConsole.plugTimeMachine(timeMachine);
 
 		var lift1 = liftConsole.applyTimeMachineTo(0,20);
 		assert.equal(WAITING_DOOR_CLOSE_TO_GO_UP,lift1.getState());
+		assert.equal(1,lift1.getNumOfPeopleIn());
 		assert.equal(1,lift1.getCurrentFloor());
 
-		var lift1 = liftConsole.applyTimeMachineTo(0,2);
-		assert.equal(WAITING_DOOR_CLOSE_TO_GO_UP,lift1.getState());
-		assert.equal(2,lift1.getCurrentFloor());
-
-		var lift1 = liftConsole.applyTimeMachineTo(0,20);
-		assert.equal(WAITING_DOOR_CLOSE_TO_GO_UP,lift1.getState());
-		assert.equal(2,lift1.getCurrentFloor());
-
-		var lift1 = liftConsole.applyTimeMachineTo(0,4);
-		assert.equal(WAITING_DOOR_CLOSE_TO_GO_UP,lift1.getState());
-		assert.equal(4,lift1.getCurrentFloor());
-
-		var lift1 = liftConsole.applyTimeMachineTo(0,20);
-		assert.equal(WAITING_DOOR_CLOSE_TO_GO_UP,lift1.getState());
-		assert.equal(4,lift1.getCurrentFloor());
-
-		var lift1 = liftConsole.applyTimeMachineTo(0,12);
+		var lift1 = liftConsole.applyTimeMachineTo(0,28);
 		assert.equal(WAITING_DOOR_CLOSE_TO_GO_DOWN,lift1.getState());
+		assert.equal(0,lift1.getNumOfPeopleIn());
+		assert.equal(15,lift1.getCurrentFloor());
+
+		var lift1 = liftConsole.applyTimeMachineTo(0,20);
+		assert.equal(WAITING_DOOR_CLOSE_TO_GO_DOWN,lift1.getState());
+		assert.equal(0,lift1.getNumOfPeopleIn());
+		assert.equal(15,lift1.getCurrentFloor());
+
+		var lift1 = liftConsole.applyTimeMachineTo(0,10);
+		assert.equal(WAITING_DOOR_CLOSE_TO_GO_DOWN,lift1.getState());
+		assert.equal(1,lift1.getNumOfPeopleIn());
 		assert.equal(10,lift1.getCurrentFloor());
 
-		var lift1 = liftConsole.applyTimeMachineTo(0,20);
+		var lift1 = liftConsole.applyTimeMachineTo(0,30);
 		assert.equal(WAITING_DOOR_CLOSE_TO_GO_DOWN,lift1.getState());
-		assert.equal(10,lift1.getCurrentFloor());
+		assert.equal(1,lift1.getNumOfPeopleIn());
+		assert.equal(5,lift1.getCurrentFloor());
 
-		var lift1 = liftConsole.applyTimeMachineTo(0,12);
-		assert.equal(WAITING_DOOR_CLOSE_TO_GO_DOWN,lift1.getState());
-		assert.equal(4,lift1.getCurrentFloor());
-
-		var lift1 = liftConsole.applyTimeMachineTo(0,20);
-		assert.equal(WAITING_DOOR_CLOSE_TO_GO_DOWN,lift1.getState());
-		assert.equal(4,lift1.getCurrentFloor());
-
-		var lift1 = liftConsole.applyTimeMachineTo(0,4);
-		assert.equal(WAITING_DOOR_CLOSE_TO_GO_DOWN,lift1.getState());
-		assert.equal(2,lift1.getCurrentFloor());
-
-		var lift1 = liftConsole.applyTimeMachineTo(0,20);
-		assert.equal(WAITING_DOOR_CLOSE_TO_GO_DOWN,lift1.getState());
-		assert.equal(2,lift1.getCurrentFloor());
-
-		lift1.setUpFloors([4]);
-
-		var lift1 = liftConsole.applyTimeMachineTo(0,2);
-		assert.equal(WAITING_DOOR_CLOSE_TO_GO_UP,lift1.getState());
-		assert.equal(1,lift1.getCurrentFloor());
-
-		var lift1 = liftConsole.applyTimeMachineTo(0,20);
-		assert.equal(WAITING_DOOR_CLOSE_TO_GO_UP,lift1.getState());
-		assert.equal(1,lift1.getCurrentFloor());
-
-		var lift1 = liftConsole.applyTimeMachineTo(0,6);
+		var lift1 = liftConsole.applyTimeMachineTo(0,30);
 		assert.equal(STOPPED,lift1.getState());
-		assert.equal(4,lift1.getCurrentFloor());
-	});
+		assert.equal(0,lift1.getNumOfPeopleIn());
+		assert.equal(1,lift1.getCurrentFloor());
 
-	it('Should catch people in first floor',function(){
-		var lift1 			= liftFactory.createLift({id:1,maxPassangers:8,currentFloor:1});
-		var liftConsole 	= brain.createLiftBrain();
-
-		lift1.setState(WAITING_DOOR_CLOSE_TO_GO_UP);
-		liftConsole.addLift(lift1);
-
-		var timeMachine = timeMachineFactory.createTimeMachine();
-		liftConsole.plugTimeMachine(timeMachine);
-
-	});
+	});	
 });

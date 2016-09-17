@@ -22,15 +22,15 @@ module.exports = {
 
 					switch(lift.getState()) {
 						case STOPPED:
-							lift.leavePeople();
-							lift.catchPeople();
 							lift.setState(STOPPED);
 							return lift;
 						break;
 						
 						case WAITING_DOOR_CLOSE_TO_GO_UP:
-							lift.leavePeople();
-							lift.catchPeople();
+							var currentFloor = lift.getCurrentFloor();
+							
+							lift.catchPeople(currentFloor);
+							lift.leavePeople(currentFloor);
 
 							if ( !lift.hasTargetFloor() || ( lift.getTargetFloor() === lift.getCurrentFloor() && lift.getNumOfPeopleIn() === 1 ))
 							{
@@ -48,6 +48,9 @@ module.exports = {
 							var seconds = Math.abs(secondsToMove - lift.getDoorTimer());
 							lift.resetDoorTimer();
 
+							
+							
+
 							if ( lift.getCurrentFloor() < lift.getTargetFloor() )
 								lift.setState(MOVING_UP);
 							else if ( lift.getCurrentFloor() > lift.getTargetFloor() )
@@ -59,9 +62,13 @@ module.exports = {
 						break;
 
 						case WAITING_DOOR_CLOSE_TO_GO_DOWN:
-							lift.leavePeople();
-							lift.catchPeople();
-							if ( !lift.hasTargetFloor() || ( lift.getTargetFloor() === lift.getCurrentFloor() && lift.getNumOfPeopleIn() === 1) )
+							
+							var targetFloor  = lift.getTargetFloor();
+							var currentFloor = lift.getCurrentFloor();
+							lift.catchPeople(currentFloor);
+							lift.leavePeople(currentFloor);
+
+							if ( !lift.hasTargetFloor() || ( targetFloor === currentFloor && lift.getNumOfPeopleIn() === 1 ) )
 							{
 								lift.setState(STOPPED);
 								return lift;
@@ -77,20 +84,22 @@ module.exports = {
 							var seconds = Math.abs(secondsToMove - lift.getDoorTimer());
 							lift.resetDoorTimer();
 
-							if ( lift.getCurrentFloor() < lift.getTargetFloor() )
+							if ( currentFloor < targetFloor )
 								lift.setState(MOVING_UP);
-							else if ( lift.getCurrentFloor() > lift.getTargetFloor() )
+							else if ( currentFloor > lift.getTargetFloor() )
 								lift.setState(MOVING_DOWN);
 
 							return this.run(lift,seconds)
 						break;
 
 						case MOVING_UP:
+							
 							if ( !lift.hasTargetFloor() )
 							{
 								lift.setState(STOPPED);
 								return lift;
 							}
+
 
 							//Move actually!
 							var numOfFloorsToReachNext = Math.abs(lift.getTargetFloor()-lift.getCurrentFloor());
@@ -105,6 +114,9 @@ module.exports = {
 							if ( secondsToMove === secondsToReachNextFloor )
 							{
 								lift.moveUpTo( lift.getCurrentFloor() + (secondsToMove/secondsByFloor) );
+
+								
+								
 
 								if ( !lift.hasTargetFloor() )
 								{
@@ -148,6 +160,7 @@ module.exports = {
 						break;
 
 						case MOVING_DOWN:
+							
 							if ( !lift.hasTargetFloor() )
 							{
 								lift.setState(STOPPED);

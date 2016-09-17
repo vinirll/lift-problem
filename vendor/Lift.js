@@ -18,10 +18,11 @@ module.exports = {
 			var mTargetFloors 		= [];
 
 			var upFloor			= [];
-			var downFloor			= [];
-
+			var downFloor		= [];
 			var peopleToLeave = {};
 			var peopleToEnter = {};
+
+			var intents = [];
 
 			var mTimeToCloseDoor = 20;
 			var doorTimer = 20;
@@ -34,56 +35,20 @@ module.exports = {
 					return mId;
 				},
 				addIntoFullyLoaded: function(callObj,person) {
-					peopleToEnter[ callObj.from ].push(person);
-					peopleToLeave[ callObj.to ].push(person);
+					// peopleToEnter[ callObj.from ].push(person);
+					// peopleToLeave[ callObj.to ].push(person);
 				},
-				add: function(callObj,person) {
-					peopleToEnter[ callObj.from ].push(person);
-					peopleToLeave[ callObj.to ].push(person);
-
-					if ( mCurrentFloor === callObj.from )
-					{
-						if ( callObj.from < callObj.to )
-						{
-							upFloor.push( callObj.to );
-							upFloor.sort();							
-						}
-						else
-						{
-							downFloor.push( callObj.to );
-							downFloor.sort();														
-						}
-					}
-					else if ( mCurrentFloor > callObj.from )
-					{
-						downFloor.push( callObj.from );
-						if ( callObj.from < callObj.to )
-							upFloor.push( callObj.to );
-						else
-						{
-						}
-					}
-					else if ( mCurrentFloor < callObj.from )
-					{
-						if ( callObj.from < callObj.to )
-						{
-						}
-						else
-						{
-						}
-					}
+				call: function(intent) {
+					intents.push(intent);
 				},
-				leavePeople: function() {
-					var currentFloor = this.getCurrentFloor();
-					for (var i=0;i<peopleToLeave[currentFloor].length;i++)
-						peopleToLeave[currentFloor][i].leaveLift();
-					delete peopleToLeave[ this.getCurrentFloor() ];
+				leavePeople: function(floor) {
+					_.remove(intents,(i) => (i.person.isInLift() && i.to === floor));
 				},
-				catchPeople: function() {
-					var currentFloor = this.getCurrentFloor();
-					for (var i=0;i<peopleToEnter[currentFloor].length;i++)
-						peopleToEnter[currentFloor][i].enterLift();
-					delete peopleToEnter[ this.getCurrentFloor() ];
+				catchPeople: function(floor) {
+					_.map(intents,(i) => {
+						if ( !i.person.isInLift() && i.from === floor )
+							i.person.enterLift();
+					});
 				},
 				getState: function() {
 					return mState;
@@ -95,7 +60,7 @@ module.exports = {
 					return ((upFloor.length+downFloor.length)>=mMaxPassangers);
 				},
 				getNumOfPeopleIn: function() {
-					return upFloor.length+downFloor.length;
+					return _.filter(intents,(i) => i.person.isInLift()).length;
 				},
 				isStopped: function() {
 					if (mState === STOPPED)
@@ -108,20 +73,14 @@ module.exports = {
 					return false;
 				},
 				moveUpTo: function(floor) {
+					this.leavePeople(floor);
+					this.catchPeople(floor);
 					this.setCurrentFloor(floor);
-					if ( upFloor.length > 0 )
-					{
-						var floorIdx = upFloor.indexOf(Math.ceil(floor));
-						upFloor.splice(0,floorIdx+1)
-					}
 				},
 				moveDownTo: function(floor) {
+					this.leavePeople(floor);
+					this.catchPeople(floor);
 					this.setCurrentFloor(floor);
-					if ( downFloor.length > 0 )
-					{
-						var floorIdx = downFloor.indexOf(Math.ceil(floor));
-						downFloor.splice(0,floorIdx+1)
-					}
 				},
 				setCurrentFloor: function(currentFloor) {
 					mCurrentFloor = currentFloor;
@@ -130,34 +89,113 @@ module.exports = {
 					return mCurrentFloor;
 				},
 				getTargetFloor: function() {
+
+					if ( intents.length === 0 )
+						return null;
+
 					if (mState === MOVING_UP || mState === WAITING_DOOR_CLOSE_TO_GO_UP)
 					{
-						if ( upFloor.length > 0 )
-							return upFloor[ 0 ];
-						else if ( downFloor.length > 0 )
-							return downFloor[0]
-						else
-							return null;
+						var upTargetFloor =  this.getUpTargetFloor();
+						if ( typeof upTargetFloor !== 'undefined' )
+							return upTargetFloor;
+
+						var downTargetFloor = this.getDownTargetFloor();
+						if ( typeof downTargetFloor !== 'undefined' )
+							return downTargetFloor;
 					}
-					else if (mState === MOVING_DOWN || mState === WAITING_DOOR_CLOSE_TO_GO_DOWN)
+
+					if (mState === MOVING_DOWN || mState === WAITING_DOOR_CLOSE_TO_GO_DOWN)
 					{
-						if ( downFloor.length > 0 )
-							return downFloor[ 0 ];
-						else if ( upFloor.length > 0 )
-							return upFloor[0]
-						else
-							return null;
+						var downTargetFloor =  this.getDownTargetFloor();
+						if ( typeof downTargetFloor !== 'undefined' )
+							return downTargetFloor;
+						
+						var upTargetFloor = this.getUpTargetFloor();
+						if ( typeof upTargetFloor !== 'undefined' )
+							return upTargetFloor;
 					}
-					else
-						return null;
+
+					return null;
+				},
+				getUpTargetFloor: function() {
+					var inLiftList 					= _.filter(intents,(i) => (i.person.isInLift() &&  i.to > mCurrentFloor));
+					var notInLiftListOnThisFloor 	= _.filter(intents,(i) => (!i.person.isInLift() && i.from > mCurrentFloor && i.to > i.from));
+					var notInLiftButOnThisFloor		= _.filter(intents,(i) => (!i.person.isInLift() && i.from === mCurrentFloor && i.to > i.from));
+
+					if (inLiftList.length === 0 && notInLiftListOnThisFloor.length === 0 && notInLiftButOnThisFloor.length === 0)
+					{
+						list = _.filter(intents,(i)=>(!i.person.isInLift() && i.from > mCurrentFloor && i.to < i.from));
+						if (list.length === 0) return;
+						return _.maxBy(list,function(i){ return i.from }).from;
+					}
+
+					if ( notInLiftListOnThisFloor.length === 0 && notInLiftButOnThisFloor.length !== 0 && inLiftList.length === 0)
+						return _.minBy(notInLiftButOnThisFloor,(i)=>i.to).to;
+					else if (notInLiftListOnThisFloor.length !== 0 && notInLiftButOnThisFloor.length === 0 && inLiftList.length === 0 )
+						return _.minBy(notInLiftListOnThisFloor,(i)=>i.from).from;
+					else if (notInLiftListOnThisFloor.length === 0 && notInLiftButOnThisFloor.length === 0 && inLiftList.length !== 0)
+						return _.minBy(inLiftList,(i)=>i.to).to;
+					else if (notInLiftListOnThisFloor.length !== 0 && notInLiftButOnThisFloor.length === 0 && inLiftList.length !== 0)
+					{
+						var inListMinTo = _.minBy(inLiftList,function(i){ return i.to });
+						var notInListMinFrom = _.minBy(notInLiftListOnThisFloor,function(i){ return i.from });
+						return (inListMinTo.to < notInListMinFrom.from) ? inListMinTo.to:notInListMinFrom.from;						
+					}
+					else if (notInLiftListOnThisFloor.length === 0 && notInLiftButOnThisFloor.length !== 0 && inLiftList.length !== 0)
+					{
+						// console.log('FFFFF');
+						var inListMinTo = _.minBy(inLiftList,function(i){ return i.to });
+						var notInListMinFrom = _.minBy(notInLiftButOnThisFloor,function(i){ return i.to });
+						return (inListMinTo.to < notInListMinFrom.from) ? inListMinTo.to:notInListMinFrom.from;
+					}
+				},
+				getDownTargetFloor: function() {
+					var inLiftList 					= _.filter(intents,(i) => (i.person.isInLift() &&  i.to < mCurrentFloor));
+					var notInLiftListOnThisFloor 	= _.filter(intents,(i) => (!i.person.isInLift() && i.from < mCurrentFloor && i.to < i.from));
+					var notInLiftButOnThisFloor		= _.filter(intents,(i) => (!i.person.isInLift() && i.from === mCurrentFloor && i.to < i.from));
+
+					if (inLiftList.length === 0 && notInLiftListOnThisFloor.length === 0 && notInLiftButOnThisFloor == 0)
+					{
+						list = _.filter(intents,(i)=>(!i.person.isInLift() && i.from < mCurrentFloor && i.to > i.from));
+						if (list.length === 0) return;
+						return _.minBy(list,function(i){ return i.from }).from;
+					}
+
+					if ( notInLiftListOnThisFloor.length === 0 && notInLiftButOnThisFloor.length !== 0 && inLiftList.length === 0)
+						return _.maxBy(notInLiftButOnThisFloor,(i)=>i.to).to;
+					else if (notInLiftListOnThisFloor.length !== 0 && notInLiftButOnThisFloor.length === 0 && inLiftList.length === 0 )
+						return _.maxBy(notInLiftListOnThisFloor,(i)=>i.from).from;
+					else if (notInLiftListOnThisFloor.length === 0 && notInLiftButOnThisFloor.length === 0 && inLiftList.length !== 0)
+						return _.maxBy(inLiftList,(i)=>i.to).to;
+					else if (notInLiftListOnThisFloor.length !== 0 && notInLiftButOnThisFloor.length === 0 && inLiftList.length !== 0)
+					{
+						var inListMinTo = _.maxBy(inLiftList,function(i){ return i.to });
+						var notInListMinFrom = _.maxBy(notInLiftListOnThisFloor,function(i){ return i.from });
+						return (inListMinTo.to < notInListMinFrom.from) ? inListMinTo.to:notInListMinFrom.from;						
+					}
+					else if (notInLiftListOnThisFloor.length === 0 && notInLiftButOnThisFloor.length !== 0 && inLiftList.length !== 0)
+					{
+						var inListMinTo = _.maxBy(inLiftList,function(i){ return i.to });
+						var notInListMinFrom = _.maxBy(notInLiftButOnThisFloor,function(i){ return i.to });
+						return (inListMinTo.to < notInListMinFrom.from) ? inListMinTo.to:notInListMinFrom.from;
+					}
 				},
 				hasTargetFloor: function() {
-					if ( this.getTargetFloor() !== null )
-						return true;
-					return false;
+					return (intents.length>0);
 				},
 				setState: function(state) {
+					if (( mState === MOVING_DOWN && state === MOVING_UP )					||
+						( mState === MOVING_UP && state === MOVING_DOWN )					||
+						( mState === MOVING_UP && state === WAITING_DOOR_CLOSE_TO_GO_DOWN ) ||
+						( mState === MOVING_DOWN && state === WAITING_DOOR_CLOSE_TO_GO_UP ))
+					{
+						this.flipDirection();
+					}
+
 					mState = state;
+				},
+				flipDirection: function() {
+
 				},
 				setUpFloors: function(upFloorParam) {
 					upFloor = upFloorParam;
@@ -217,6 +255,3 @@ module.exports = {
 		return lift;
 	}
 }
-
-[4,6,8,10]
-[9,7,6,1]
